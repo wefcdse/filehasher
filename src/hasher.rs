@@ -8,8 +8,8 @@ use std::fs;
 use std::path::Path;
 use walkdir;
 use walkdir::WalkDir;
-pub fn hasher(dir: WalkDir) -> HashMap<String, Vec<String>> {
-    let mut map = HashMap::<String, Vec<String>>::new();
+pub fn hasher(dir: WalkDir) -> HashMap<(String, usize), Vec<String>> {
+    let mut map = HashMap::<(String, usize), Vec<String>>::new();
     for entry in dir {
         let entry = match entry {
             Ok(f) => {
@@ -44,11 +44,12 @@ pub fn hasher(dir: WalkDir) -> HashMap<String, Vec<String>> {
     map
 }
 
-fn get_hash<P: AsRef<Path>>(path: P) -> Result<String, std::io::Error> {
+fn get_hash<P: AsRef<Path>>(path: P) -> Result<(String, usize), std::io::Error> {
     let file = fs::read(path)?;
+    let size = file.len();
     let mut hasher = Md5::new();
     hasher.input(&file);
-    Ok(hasher.result_str())
+    Ok((hasher.result_str(), size))
 }
 
 #[test]
@@ -63,7 +64,8 @@ use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
 #[derive(Debug, Clone)]
 struct WorkResult {
-    hash: String,
+    hash: (String, usize),
+
     path: String,
     id: usize,
 }
@@ -72,8 +74,8 @@ enum Workload {
     New(String),
     End,
 }
-pub fn hasher_multi(dir: WalkDir, threads: usize) -> HashMap<String, Vec<String>> {
-    let mut map = HashMap::<String, Vec<String>>::new();
+pub fn hasher_multi(dir: WalkDir, threads: usize) -> HashMap<(String, usize), Vec<String>> {
+    let mut map = HashMap::<(String, usize), Vec<String>>::new();
 
     let (tx_result, rx_result) = mpsc::channel::<WorkResult>();
     let mut thread_pool: Vec<JoinHandle<()>> = Vec::new();

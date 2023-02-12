@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 crossbeam-channel = "0.5.6"
 rust-crypto = "0.2.36"
+structopt = "0.3.26"
 walkdir = "2.3.2"
