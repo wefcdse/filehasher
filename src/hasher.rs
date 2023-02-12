@@ -5,6 +5,7 @@ use crypto::md5::Md5;
 
 use std::collections::HashMap;
 use std::fs;
+use std::io::Read;
 use std::path::Path;
 use walkdir;
 use walkdir::WalkDir;
@@ -45,15 +46,39 @@ pub fn hasher(dir: WalkDir) -> HashMap<(String, usize), Vec<String>> {
 }
 
 fn get_hash<P: AsRef<Path>>(path: P) -> Result<(String, usize), std::io::Error> {
-    let file = fs::read(path)?;
-    let size = file.len();
+    let mut file = fs::OpenOptions::new()
+        .write(false)
+        .read(true)
+        .create(false)
+        .open(&path)?;
+    let mut size = 0_usize;
     let mut hasher = Md5::new();
-    hasher.input(&file);
+
+    loop {
+        let mut buffer = [0_u8; 1024 * 1024];
+        let s = file.read(&mut buffer[..])?;
+        if s == 0 {
+            break;
+        }
+        size += s;
+        //let file = fs::read(path)?;
+        hasher.input(&buffer[0..s]);
+    }
     Ok((hasher.result_str(), size))
 }
 
 #[test]
 fn t1() -> () {
+    let mut file = fs::OpenOptions::new()
+        .write(false)
+        .read(true)
+        .create(false)
+        .open("./t/a.txt")
+        .unwrap();
+    let mut buffer = [0_u8; 512];
+    let a = file.read(&mut buffer[..]).unwrap();
+    let a = file.read(&mut buffer[..]).unwrap();
+    print!("{}", a);
     let map = hasher(WalkDir::new("./t"));
     println!("{:?}", map);
 }

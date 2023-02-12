@@ -8,7 +8,7 @@ use walkdir::WalkDir;
 struct Opt {
     /// Set worker threads
     // we don't want to name it "speed", need to look smart
-    #[structopt(short = "t", long = "threads", default_value = "1")]
+    #[structopt(short = "t", long = "threads", default_value = "16")]
     threads: usize,
 }
 
