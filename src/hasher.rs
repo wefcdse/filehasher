@@ -76,7 +76,7 @@ fn t1() -> () {
         .open("./t/a.txt")
         .unwrap();
     let mut buffer = [0_u8; 512];
-    let a = file.read(&mut buffer[..]).unwrap();
+    let _ = file.read(&mut buffer[..]).unwrap();
     let a = file.read(&mut buffer[..]).unwrap();
     print!("{}", a);
     let map = hasher(WalkDir::new("./t"));
